@@ -1,4 +1,4 @@
-$(async function() {
+$(async function () {
   // cache some selectors we'll be using quite a bit
   const $allStoriesList = $("#all-articles-list");
   const $submitForm = $("#submit-form");
@@ -9,6 +9,8 @@ $(async function() {
   const $navLogin = $("#nav-login");
   const $navLogOut = $("#nav-logout");
 
+  const $addStoryForm = $("#add-article-form");
+
   // global storyList variable
   let storyList = null;
 
@@ -18,11 +20,30 @@ $(async function() {
   await checkIfLoggedIn();
 
   /**
+   * Event listener for adding story.
+   *
+   */
+  $addStoryForm.on("submit", async function (evt) {
+    evt.preventDefault();
+
+    const newStory = {
+      title: $("#add-title").val(),
+      author: $("#add-author").val(),
+      url: $("#add-url").val(),
+    };
+
+    storyList.addStory(currentUser, newStory);
+
+    console.log("New Story Submitted!");
+    $addStoryForm.trigger("reset");
+  });
+
+  /**
    * Event listener for logging in.
    *  If successfully we will setup the user instance
    */
 
-  $loginForm.on("submit", async function(evt) {
+  $loginForm.on("submit", async function (evt) {
     evt.preventDefault(); // no page-refresh on submit
 
     // grab the username and password
@@ -42,7 +63,7 @@ $(async function() {
    *  If successfully we will setup a new user instance
    */
 
-  $createAccountForm.on("submit", async function(evt) {
+  $createAccountForm.on("submit", async function (evt) {
     evt.preventDefault(); // no page refresh
 
     // grab the required fields
@@ -61,7 +82,7 @@ $(async function() {
    * Log Out Functionality
    */
 
-  $navLogOut.on("click", function() {
+  $navLogOut.on("click", function () {
     // empty out local storage
     localStorage.clear();
     // refresh the page, clearing memory
@@ -72,7 +93,7 @@ $(async function() {
    * Event Handler for Clicking Login
    */
 
-  $navLogin.on("click", function() {
+  $navLogin.on("click", function () {
     // Show the Login and Create Account Forms
     $loginForm.slideToggle();
     $createAccountForm.slideToggle();
@@ -83,7 +104,7 @@ $(async function() {
    * Event handler for Navigation to Homepage
    */
 
-  $("body").on("click", "#nav-all", async function() {
+  $("body").on("click", "#nav-all", async function () {
     hideElements();
     await generateStories();
     $allStoriesList.show();
@@ -125,6 +146,7 @@ $(async function() {
 
     // show the stories
     $allStoriesList.show();
+    $addStoryForm.slideToggle();
 
     // update the navigation bar
     showNavForLoggedInUser();
@@ -181,9 +203,9 @@ $(async function() {
       $filteredArticles,
       $ownStories,
       $loginForm,
-      $createAccountForm
+      $createAccountForm,
     ];
-    elementsArr.forEach($elem => $elem.hide());
+    elementsArr.forEach(($elem) => $elem.hide());
   }
 
   function showNavForLoggedInUser() {
