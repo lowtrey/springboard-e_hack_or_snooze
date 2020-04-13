@@ -9,7 +9,7 @@ $(async function () {
   const $navLogin = $("#nav-login");
   const $navLogOut = $("#nav-logout");
 
-  const $addStoryForm = $("#add-article-form");
+  const $addStoryForm = $("#submit-form");
 
   // global storyList variable
   let storyList = null;
@@ -26,11 +26,11 @@ $(async function () {
   $addStoryForm.on("submit", async function (evt) {
     evt.preventDefault();
 
-    const newStory = {
-      title: $("#add-title").val(),
-      author: $("#add-author").val(),
-      url: $("#add-url").val(),
-    };
+    const author = $("#author").val();
+    const title = $("#title").val();
+    const url = $("#url").val();
+
+    const newStory = { author, title, url };
 
     storyList.addStory(currentUser, newStory);
 
