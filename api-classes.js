@@ -44,8 +44,6 @@ class StoryList {
    */
 
   async addStory(user, newStory) {
-    // TODO - Implement this function!
-
     const requestBody = {
       token: user.loginToken,
       story: {
@@ -54,11 +52,16 @@ class StoryList {
         url: newStory.url,
       },
     };
-
     // this function should return the newly created story so it can be used in
     // the script.js file where it will be appended to the DOM
     const response = await axios.post(`${BASE_URL}/stories`, requestBody);
-    return response.data.story;
+    // make a Story instance out of the story object we get back
+    newStory = new Story(response.data.story);
+    // add the story to the beginning of the user's list
+    user.ownStories.unshift(newStory);
+
+    return newStory;
+    // return response.data.story;
   }
 }
 
@@ -169,6 +172,36 @@ class User {
       (s) => new Story(s)
     );
     return existingUser;
+  }
+
+  async addFavorite(storyId) {
+    // if we don't have user info, return null
+    // if (!storyId) return null;
+    // WORKING HERE
+    // call the API
+    const { loginToken, username } = this;
+    const response = await axios.post(
+      `${BASE_URL}/users/${username}/favorites/${storyId}`,
+      {
+        token: loginToken,
+      }
+    );
+    console.log(response);
+
+    // // instantiate the user from the API information
+    // const existingUser = new User(response.data.user);
+
+    // // attach the token to the newUser instance for convenience
+    // existingUser.loginToken = token;
+
+    // // instantiate Story instances for the user's favorites and ownStories
+    // existingUser.favorites = response.data.user.favorites.map(
+    //   (s) => new Story(s)
+    // );
+    // existingUser.ownStories = response.data.user.stories.map(
+    //   (s) => new Story(s)
+    // );
+    // return existingUser;
   }
 }
 

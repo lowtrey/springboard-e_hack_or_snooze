@@ -3,6 +3,7 @@ $(async function () {
   const $allStoriesList = $("#all-articles-list");
   const $submitForm = $("#submit-form");
   const $filteredArticles = $("#filtered-articles");
+  const $favoritedArticles = $("#favorited-articles");
   const $loginForm = $("#login-form");
   const $createAccountForm = $("#create-account-form");
   const $ownStories = $("#my-articles");
@@ -36,6 +37,28 @@ $(async function () {
 
     console.log("New Story Submitted!");
     $addStoryForm.trigger("reset");
+  });
+
+  /**
+   * Event listener for favoriting story.
+   *
+   */
+  $allStoriesList.on("click", "#favorite", async function (evt) {
+    const favoritedStoryId = $(evt.target).parent().attr("id");
+
+    for (let favorite of currentUser.favorites) {
+      if (favoritedStoryId === favorite.storyId) {
+        console.log("Already Favorited!");
+        return;
+      }
+    }
+    console.log("No match found");
+
+    // console.log(currentUser.favorites);
+
+    // await currentUser.addFavorite(favoritedStoryId);
+
+    // console.log();
   });
 
   /**
@@ -182,6 +205,7 @@ $(async function () {
     // render story markup
     const storyMarkup = $(`
       <li id="${story.storyId}">
+        <span id="favorite" class="star">&star;</span>
         <a class="article-link" href="${story.url}" target="a_blank">
           <strong>${story.title}</strong>
         </a>
