@@ -46,19 +46,15 @@ $(async function () {
   $allStoriesList.on("click", "#favorite", async function (evt) {
     const favoritedStoryId = $(evt.target).parent().attr("id");
 
-    for (let favorite of currentUser.favorites) {
-      if (favoritedStoryId === favorite.storyId) {
-        console.log("Already Favorited!");
-        return;
-      }
-    }
-    console.log("No match found");
+    console.log(currentUser);
 
-    // console.log(currentUser.favorites);
+    await currentUser.addFavorite(favoritedStoryId);
+    await generateStories();
 
-    // await currentUser.addFavorite(favoritedStoryId);
-
-    // console.log();
+    // TODO
+    // - write generateFavorites function similar to generate stories
+    // - this function should get favorites from user object and render html
+    // - should append the favorites to favorites list
   });
 
   /**
@@ -169,6 +165,7 @@ $(async function () {
 
     // show the stories
     $allStoriesList.show();
+    $favoritedArticles.show();
     $addStoryForm.slideToggle();
 
     // update the navigation bar

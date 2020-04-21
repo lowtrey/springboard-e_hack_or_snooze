@@ -123,6 +123,8 @@ class User {
         password,
       },
     });
+    // USE BELOW INSIDE OF ADDFAVORITE FUNCTION ******
+    // TO UPDATE USER WHEN I ADD OR REMOVE FAVORITES *****
 
     // build a new User instance from the API response
     const existingUser = new User(response.data.user);
@@ -175,33 +177,24 @@ class User {
   }
 
   async addFavorite(storyId) {
-    // if we don't have user info, return null
-    // if (!storyId) return null;
     // WORKING HERE
-    // call the API
-    const { loginToken, username } = this;
-    const response = await axios.post(
-      `${BASE_URL}/users/${username}/favorites/${storyId}`,
-      {
-        token: loginToken,
-      }
-    );
-    console.log(response);
+    const { favorites, loginToken, username } = this;
+    const url = `${BASE_URL}/users/${username}/favorites/${storyId}`;
+    const alreadyFavorited = favorites.some((fave) => fave.storyId === storyId);
 
-    // // instantiate the user from the API information
-    // const existingUser = new User(response.data.user);
-
-    // // attach the token to the newUser instance for convenience
-    // existingUser.loginToken = token;
-
-    // // instantiate Story instances for the user's favorites and ownStories
-    // existingUser.favorites = response.data.user.favorites.map(
-    //   (s) => new Story(s)
-    // );
-    // existingUser.ownStories = response.data.user.stories.map(
-    //   (s) => new Story(s)
-    // );
-    // return existingUser;
+    if (alreadyFavorited) {
+      console.log("Already Favorited! Deleting...");
+      // call the API
+      const response = await axios.delete(url, {
+        params: { token: loginToken },
+      });
+      console.log(response);
+    } else {
+      console.log("Favoriting....");
+      // call the API
+      const response = await axios.post(url, { token: loginToken });
+      console.log(response);
+    }
   }
 }
 
