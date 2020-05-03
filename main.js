@@ -22,7 +22,6 @@ $(async function () {
 
   /**
    * Event listener for adding story.
-   *
    */
   $addStoryForm.on("submit", async function (evt) {
     evt.preventDefault();
@@ -44,24 +43,26 @@ $(async function () {
    *
    */
   $allStoriesList.on("click", "#favorite", async function (evt) {
+    // get story ID
     const favoritedStoryId = $(evt.target).parent().attr("id");
 
-    console.log(currentUser);
+    // Add favorite using API and update current user
+    const updatedUser = await currentUser.addFavorite(favoritedStoryId);
+    currentUser = updatedUser;
 
-    await currentUser.addFavorite(favoritedStoryId);
+    // re-render stories
+    hideElements();
     await generateStories();
+    generateFavorites();
 
-    // TODO
-    // - write generateFavorites function similar to generate stories
-    // - this function should get favorites from user object and render html
-    // - should append the favorites to favorites list
+    $allStoriesList.show();
+    $favoritedArticles.show();
   });
 
   /**
    * Event listener for logging in.
    *  If successfully we will setup the user instance
    */
-
   $loginForm.on("submit", async function (evt) {
     evt.preventDefault(); // no page-refresh on submit
 
@@ -81,7 +82,6 @@ $(async function () {
    * Event listener for signing up.
    *  If successfully we will setup a new user instance
    */
-
   $createAccountForm.on("submit", async function (evt) {
     evt.preventDefault(); // no page refresh
 
@@ -100,7 +100,6 @@ $(async function () {
   /**
    * Log Out Functionality
    */
-
   $navLogOut.on("click", function () {
     // empty out local storage
     localStorage.clear();
@@ -111,18 +110,17 @@ $(async function () {
   /**
    * Event Handler for Clicking Login
    */
-
   $navLogin.on("click", function () {
     // Show the Login and Create Account Forms
     $loginForm.slideToggle();
     $createAccountForm.slideToggle();
     $allStoriesList.toggle();
+    $favoritedArticles.toggle();
   });
 
   /**
    * Event handler for Navigation to Homepage
    */
-
   $("body").on("click", "#nav-all", async function () {
     hideElements();
     await generateStories();
@@ -133,7 +131,6 @@ $(async function () {
    * On page load, checks local storage to see if the user is already logged in.
    * Renders page information accordingly.
    */
-
   async function checkIfLoggedIn() {
     // let's see if we're logged in
     const token = localStorage.getItem("token");
@@ -146,14 +143,14 @@ $(async function () {
     await generateStories();
 
     if (currentUser) {
-      showNavForLoggedInUser();
+      showElements();
+      generateFavorites();
     }
   }
 
   /**
    * A rendering function to run to reset the forms and hide the login info
    */
-
   function loginAndSubmitForm() {
     // hide the forms for logging in and signing up
     $loginForm.hide();
@@ -165,18 +162,17 @@ $(async function () {
 
     // show the stories
     $allStoriesList.show();
-    $favoritedArticles.show();
     $addStoryForm.slideToggle();
 
-    // update the navigation bar
-    showNavForLoggedInUser();
+    // show elements
+    generateFavorites();
+    showElements();
   }
 
   /**
    * A rendering function to call the StoryList.getStories static method,
    *  which will generate a storyListInstance. Then render it.
    */
-
   async function generateStories() {
     // get an instance of StoryList
     const storyListInstance = await StoryList.getStories();
@@ -191,11 +187,20 @@ $(async function () {
       $allStoriesList.append(result);
     }
   }
+  function generateFavorites() {
+    // empty out that part of the page
+    $favoritedArticles.empty();
+
+    // loop through all of our favorites and generate HTML for them
+    for (let favorite of currentUser.favorites) {
+      const result = generateStoryHTML(favorite);
+      $favoritedArticles.append(result);
+    }
+  }
 
   /**
    * A function to render HTML for an individual Story instance
    */
-
   function generateStoryHTML(story) {
     let hostName = getHostName(story.url);
 
@@ -216,26 +221,28 @@ $(async function () {
   }
 
   /* hide all elements in elementsArr */
-
   function hideElements() {
     const elementsArr = [
       $submitForm,
       $allStoriesList,
       $filteredArticles,
+      $favoritedArticles,
       $ownStories,
       $loginForm,
       $createAccountForm,
     ];
     elementsArr.forEach(($elem) => $elem.hide());
   }
-
-  function showNavForLoggedInUser() {
+  /* show all elements in elementsArr */
+  function showElements() {
     $navLogin.hide();
-    $navLogOut.show();
+
+    const elementsArr = [$favoritedArticles, $ownStories, $navLogOut];
+
+    elementsArr.forEach(($elem) => $elem.show());
   }
 
-  /* simple function to pull the hostname from a URL */
-
+  /* Pull the hostname from a URL */
   function getHostName(url) {
     let hostName;
     if (url.indexOf("://") > -1) {
@@ -250,7 +257,6 @@ $(async function () {
   }
 
   /* sync current user information to localStorage */
-
   function syncCurrentUserToLocalStorage() {
     if (currentUser) {
       localStorage.setItem("token", currentUser.loginToken);

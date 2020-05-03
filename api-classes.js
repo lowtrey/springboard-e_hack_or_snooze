@@ -79,8 +79,8 @@ class User {
 
     // these are all set to defaults, not passed in by the constructor
     this.loginToken = "";
-    this.favorites = [];
-    this.ownStories = [];
+    this.favorites = userObj.favorites || [];
+    this.ownStories = userObj.stories || [];
   }
 
   /* Create and return a new user.
@@ -182,19 +182,30 @@ class User {
     const url = `${BASE_URL}/users/${username}/favorites/${storyId}`;
     const alreadyFavorited = favorites.some((fave) => fave.storyId === storyId);
 
-    if (alreadyFavorited) {
-      console.log("Already Favorited! Deleting...");
-      // call the API
-      const response = await axios.delete(url, {
-        params: { token: loginToken },
-      });
-      console.log(response);
-    } else {
-      console.log("Favoriting....");
-      // call the API
-      const response = await axios.post(url, { token: loginToken });
-      console.log(response);
-    }
+    const response = alreadyFavorited
+      ? await axios.delete(url, {
+          params: { token: loginToken },
+        })
+      : await axios.post(url, { token: loginToken });
+    console.log(response.data.message);
+
+    // Update User and return new User object
+
+    // build a new User instance from the API response
+    const existingUser = new User(response.data.user);
+
+    // instantiate Story instances for the user's favorites and ownStories
+    existingUser.favorites = response.data.user.favorites.map(
+      (s) => new Story(s)
+    );
+    existingUser.ownStories = response.data.user.stories.map(
+      (s) => new Story(s)
+    );
+
+    // attach the token to the newUser instance for convenience
+    existingUser.loginToken = this.loginToken;
+
+    return existingUser;
   }
 }
 
