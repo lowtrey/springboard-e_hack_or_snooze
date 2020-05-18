@@ -39,10 +39,10 @@ $(async function () {
   });
 
   /**
-   * Event listener for favoriting story.
+   * Event listener for favoriting / unfavoriting story.
    *
    */
-  $allStoriesList.on("click", "#favorite", async function (evt) {
+  $("body").on("click", "#favorite", async function (evt) {
     // get story ID
     const favoritedStoryId = $(evt.target).parent().attr("id");
 
